@@ -1,0 +1,4 @@
+name: craftout
+version: '${project.version}'
+main: com.github.kumo0621.craftout.Craftout
+api-version: '1.20'
