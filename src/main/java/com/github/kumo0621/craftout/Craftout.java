@@ -58,16 +58,6 @@ public final class Craftout extends JavaPlugin implements Listener {
                 }
             }
         }
-        if (item != null && item.getType() == Material.CRAFTING_TABLE) {
-            if (event.getWhoClicked() instanceof Player player) {
-                Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("鍛冶屋")) {
-                    // チーム名が「鍛冶屋」でなければ、作業台のクラフトをキャンセル
-                    event.setCancelled(true);
-                    player.sendMessage("あなたは作業台をクラフトすることができません！");
-                }
-            }
-        }
         if (item != null && item.getType() == Material.BONE_MEAL) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
@@ -198,7 +188,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         Team team = player.getScoreboard().getEntryTeam(player.getName());
         if (event.hasBlock() && event.getClickedBlock().getType() == Material.BREWING_STAND) {
-            if (team == null || !team.getName().equals("薬剤師")) {
+            if (team == null || !team.getName().equals("裁縫師")) {
                 event.setCancelled(true);
             }
         }
@@ -210,7 +200,7 @@ public final class Craftout extends JavaPlugin implements Listener {
             Player player = (Player) event.getWhoClicked();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
 
-            if (team == null || !team.getName().equals("薬剤師")) {
+            if (team == null || !team.getName().equals("鍛冶屋")) {
                 event.setCancelled(true);
                 player.sendMessage("あなたは薬剤師のチームに所属していないため、ロケット花火を作成することはできません。");
             }
@@ -218,7 +208,7 @@ public final class Craftout extends JavaPlugin implements Listener {
             Player player = (Player) event.getWhoClicked();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
 
-            if (team == null || !team.getName().equals("薬剤師")) {
+            if (team == null || !team.getName().equals("鍛冶屋")) {
                 event.setCancelled(true);
                 player.sendMessage("あなたは薬剤師のチームに所属していないため、ロケット花火を作成することはできません。");
             }
