@@ -1,5 +1,6 @@
 package com.github.kumo0621.craftout;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Animals;
@@ -9,15 +10,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
-import org.bukkit.event.inventory.BrewEvent;
-import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.PrepareSmithingEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.inventory.*;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.AnvilInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
 
 import java.util.Arrays;
@@ -29,7 +32,6 @@ public final class Craftout extends JavaPlugin implements Listener {
 
     private final Set<Material> restrictedTools = new HashSet<>();
     private final Random random = new Random();
-
     @Override
     public void onEnable() {
         // イベントリスナーを登録
@@ -61,7 +63,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (item != null && item.getType() == Material.BONE_MEAL) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("パン屋")) {
+                if (team == null || !team.getName().equals("漁師")) {
                     // チーム名が「鍛冶屋」でなければ、作業台のクラフトをキャンセル
                     event.setCancelled(true);
                     player.sendMessage("あなたは骨粉をクラフトすることができません！");
@@ -100,7 +102,7 @@ public final class Craftout extends JavaPlugin implements Listener {
     public void onEnchantItem(EnchantItemEvent event) {
         Player player = event.getEnchanter();
         Team team = player.getScoreboard().getEntryTeam(player.getName());
-        if (team == null || !team.getName().equals("裁縫師")) {
+        if (team == null || !team.getName().equals("裁縫師")&&!team.getName().equals("魔法研究員")) {
             // チーム名が「パン屋」でなければ、エンチャントをキャンセル
             event.setCancelled(true);
             player.sendMessage("あなたはエンチャントを行うことができません！");
@@ -113,7 +115,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (event.getRightClicked() instanceof Animals) {
             Player player = event.getPlayer();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
-            if (team == null || !team.getName().equals("パン屋")) {
+            if (team == null || !team.getName().equals("漁師")) {
                 // チーム名が「パン屋」でなければ、動物の繁殖をキャンセル
                 event.setCancelled(true);
                 player.sendMessage("あなたは動物の繁殖を行うことができません！");
@@ -152,9 +154,9 @@ public final class Craftout extends JavaPlugin implements Listener {
             if (event.getWhoClicked() instanceof Player) {
                 Player player = (Player) event.getWhoClicked();
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("パン屋")) {
+                if (team == null || !team.getName().equals("鍛冶屋")&&!team.getName().equals("魔法研究員")) {
                     event.setCancelled(true);
-                    player.sendMessage("パン屋チームのメンバーのみ金床を使用できます。");
+                    player.sendMessage("鍛冶屋チームのメンバーと、魔法研究員のみが金床を使用できます。");
                 }
             }
         }
@@ -165,7 +167,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         ItemStack mainHandItem = player.getInventory().getItemInMainHand();
         ItemStack offHandItem = player.getInventory().getItemInOffHand();
-
+        ItemStack item = event.getItem();
         // メインハンドでネザースターを持っているかチェック
         if (mainHandItem != null && mainHandItem.getType() == Material.NETHER_STAR) {
             // オフハンドのアイテムの耐久値を回復
@@ -182,7 +184,46 @@ public final class Craftout extends JavaPlugin implements Listener {
                 }
             }
         }
+        if (item != null && item.getType() == Material.CARROT_ON_A_STICK) {
+            // キャロットつき人参棒の右クリックまたは左クリックのイベントをキャンセル
+            Team team = player.getScoreboard().getEntryTeam(player.getName());
+            if (team == null || !team.getName().equals("魔法使い")) {
+            }
+            event.setCancelled(true);
+        }
+
     }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player) {
+            Player player = (Player) event.getDamager();
+            ItemStack itemInHand = player.getInventory().getItemInMainHand();
+
+            // プレイヤーが剣または斧で攻撃しているかどうかをチェック
+            if (isSword(itemInHand.getType()) || isAxe(itemInHand.getType())) {
+                Team team = player.getScoreboard().getEntryTeam(player.getName());
+                if (team == null || !team.getName().equals("剣士")) {
+                    // 剣または斧での攻撃をキャンセル
+                    event.setCancelled(true);
+                    player.sendMessage("剣または斧での攻撃は禁止されています！");
+                }
+            }
+        }
+    }
+
+    private boolean isSword(Material material) {
+        return material == Material.WOODEN_SWORD || material == Material.STONE_SWORD ||
+                material == Material.IRON_SWORD || material == Material.GOLDEN_SWORD ||
+                material == Material.DIAMOND_SWORD || material == Material.NETHERITE_SWORD;
+    }
+
+    private boolean isAxe(Material material) {
+        return material == Material.WOODEN_AXE || material == Material.STONE_AXE ||
+                material == Material.IRON_AXE || material == Material.GOLDEN_AXE ||
+                material == Material.DIAMOND_AXE || material == Material.NETHERITE_AXE;
+    }
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -193,6 +234,7 @@ public final class Craftout extends JavaPlugin implements Listener {
             }
         }
     }
+
     @EventHandler
     public void onRocketItem(CraftItemEvent event) {
         // ロケット花火のクラフトをチェック
@@ -202,22 +244,34 @@ public final class Craftout extends JavaPlugin implements Listener {
 
             if (team == null || !team.getName().equals("鍛冶屋")) {
                 event.setCancelled(true);
-                player.sendMessage("あなたは薬剤師のチームに所属していないため、ロケット花火を作成することはできません。");
+                player.sendMessage("あなたは鍛冶屋のチームに所属していないため、ロケット花火を作成することはできません。");
             }
-        }if(event.getRecipe().getResult().getType() == Material.FIREWORK_STAR){
+        }
+        if (event.getRecipe().getResult().getType() == Material.FIREWORK_STAR) {
             Player player = (Player) event.getWhoClicked();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
 
             if (team == null || !team.getName().equals("鍛冶屋")) {
                 event.setCancelled(true);
-                player.sendMessage("あなたは薬剤師のチームに所属していないため、ロケット花火を作成することはできません。");
+                player.sendMessage("あなたは鍛冶屋のチームに所属していないため、ロケット花火を作成することはできません。");
             }
         }
     }
     @EventHandler
-    public void onPrepareSmithing(PrepareSmithingEvent event){
+    public void onPrepareSmithing(PrepareSmithingEvent event) {
         // すべての鍛冶台アップグレードをキャンセル
         event.setResult(null);
+    }
+
+    @EventHandler
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        // アイテムが紙かどうかをチェック
+        if (event.getItemDrop().getItemStack().getType() == Material.PAPER) {
+            // 紙の場合、イベントをキャンセル（ドロップを禁止）
+            event.setCancelled(true);
+            // オプションで、プレイヤーに通知
+            event.getPlayer().sendMessage("紙を捨てることはできません！");
+        }
     }
 }
 
