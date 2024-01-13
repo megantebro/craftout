@@ -32,6 +32,7 @@ public final class Craftout extends JavaPlugin implements Listener {
 
     private final Set<Material> restrictedTools = new HashSet<>();
     private final Random random = new Random();
+
     @Override
     public void onEnable() {
         // イベントリスナーを登録
@@ -102,7 +103,7 @@ public final class Craftout extends JavaPlugin implements Listener {
     public void onEnchantItem(EnchantItemEvent event) {
         Player player = event.getEnchanter();
         Team team = player.getScoreboard().getEntryTeam(player.getName());
-        if (team == null || !team.getName().equals("裁縫師")&&!team.getName().equals("魔法研究員")) {
+        if (team == null || !team.getName().equals("裁縫師") && !team.getName().equals("魔法研究員")) {
             // チーム名が「パン屋」でなければ、エンチャントをキャンセル
             event.setCancelled(true);
             player.sendMessage("あなたはエンチャントを行うことができません！");
@@ -154,7 +155,7 @@ public final class Craftout extends JavaPlugin implements Listener {
             if (event.getWhoClicked() instanceof Player) {
                 Player player = (Player) event.getWhoClicked();
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("鍛冶屋")&&!team.getName().equals("魔法研究員")) {
+                if (team == null || !team.getName().equals("鍛冶屋") && !team.getName().equals("魔法研究員")) {
                     event.setCancelled(true);
                     player.sendMessage("鍛冶屋チームのメンバーと、魔法研究員のみが金床を使用できます。");
                 }
@@ -233,7 +234,16 @@ public final class Craftout extends JavaPlugin implements Listener {
                 event.setCancelled(true);
             }
         }
+        // プレイヤーがアイテムを使用しようとした時のイベント
+        if (event.hasItem() && event.getItem().getType() == Material.CROSSBOW) {
+            // イベントで取得したアイテムがクロスボウの場合
+            if (team == null || !team.getName().equals("剣士")) {
+                event.setCancelled(true); // イベントをキャンセルしてクロスボウの使用を禁止
+                event.getPlayer().sendMessage("クロスボウの使用は禁止されています。");
+            }
+        }
     }
+
 
     @EventHandler
     public void onRocketItem(CraftItemEvent event) {
@@ -257,21 +267,12 @@ public final class Craftout extends JavaPlugin implements Listener {
             }
         }
     }
+
     @EventHandler
     public void onPrepareSmithing(PrepareSmithingEvent event) {
         // すべての鍛冶台アップグレードをキャンセル
         event.setResult(null);
     }
 
-    @EventHandler
-    public void onPlayerDropItem(PlayerDropItemEvent event) {
-        // アイテムが紙かどうかをチェック
-        if (event.getItemDrop().getItemStack().getType() == Material.PAPER) {
-            // 紙の場合、イベントをキャンセル（ドロップを禁止）
-            event.setCancelled(true);
-            // オプションで、プレイヤーに通知
-            event.getPlayer().sendMessage("紙を捨てることはできません！");
-        }
-    }
 }
 
