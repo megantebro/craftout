@@ -54,7 +54,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (item != null && restrictedTools.contains(item.getType())) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("鍛冶屋")) {
+                if (team == null || !team.getName().equals("kaziya")) {
                     // チーム名が「鍛冶屋」でなければ、クラフトをキャンセル
                     event.setCancelled(true);
                     player.sendMessage("あなたはこのツールをクラフトできません！");
@@ -64,7 +64,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (item != null && item.getType() == Material.BONE_MEAL) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("漁師")) {
+                if (team == null || !team.getName().equals("nougyou")) {
                     // チーム名が「鍛冶屋」でなければ、作業台のクラフトをキャンセル
                     event.setCancelled(true);
                     player.sendMessage("あなたは骨粉をクラフトすることができません！");
@@ -74,7 +74,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (item != null && isArmor(item.getType())) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("裁縫師")) {
+                if (team == null || !team.getName().equals("saihousi")) {
                     // チーム名が「裁縫師」でなければ、防具のクラフトをキャンセル
                     event.setCancelled(true);
                     player.sendMessage("あなたは防具をクラフトすることができません！");
@@ -103,7 +103,7 @@ public final class Craftout extends JavaPlugin implements Listener {
     public void onEnchantItem(EnchantItemEvent event) {
         Player player = event.getEnchanter();
         Team team = player.getScoreboard().getEntryTeam(player.getName());
-        if (team == null || !team.getName().equals("裁縫師") && !team.getName().equals("魔法研究員")) {
+        if (team == null || !team.getName().equals("ryousi")) {
             // チーム名が「パン屋」でなければ、エンチャントをキャンセル
             event.setCancelled(true);
             player.sendMessage("あなたはエンチャントを行うことができません！");
@@ -116,7 +116,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (event.getRightClicked() instanceof Animals) {
             Player player = event.getPlayer();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
-            if (team == null || !team.getName().equals("漁師")) {
+            if (team == null || !team.getName().equals("nougyou")) {
                 // チーム名が「パン屋」でなければ、動物の繁殖をキャンセル
                 event.setCancelled(true);
                 player.sendMessage("あなたは動物の繁殖を行うことができません！");
@@ -155,9 +155,9 @@ public final class Craftout extends JavaPlugin implements Listener {
             if (event.getWhoClicked() instanceof Player) {
                 Player player = (Player) event.getWhoClicked();
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("鍛冶屋") && !team.getName().equals("魔法研究員")) {
+                if (team == null || !team.getName().equals("kaziya")) {
                     event.setCancelled(true);
-                    player.sendMessage("鍛冶屋チームのメンバーと、魔法研究員のみが金床を使用できます。");
+                    player.sendMessage("鍛冶屋チームのメンバーが金床を使用できます。");
                 }
             }
         }
@@ -173,7 +173,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (mainHandItem != null && mainHandItem.getType() == Material.NETHER_STAR) {
             // オフハンドのアイテムの耐久値を回復
             if (offHandItem != null && offHandItem.getType().getMaxDurability() > 0) {
-                offHandItem.setDurability((short) Math.max(offHandItem.getDurability() - 100, 0));
+                offHandItem.setDurability((short) Math.max(offHandItem.getDurability() - 1000, 0));
                 player.sendMessage("オフハンドのアイテムが修理されました。");
 
                 // ネザースターを1つ消費
@@ -185,64 +185,10 @@ public final class Craftout extends JavaPlugin implements Listener {
                 }
             }
         }
-        if (item != null && item.getType() == Material.CARROT_ON_A_STICK) {
-            // キャロットつき人参棒の右クリックまたは左クリックのイベントをキャンセル
-            Team team = player.getScoreboard().getEntryTeam(player.getName());
-            if (team == null || !team.getName().equals("魔法使い")) {
-            }
-            event.setCancelled(true);
-        }
 
     }
 
-    @EventHandler
-    public void onEntityDamage(EntityDamageByEntityEvent event) {
-        if (event.getDamager() instanceof Player) {
-            Player player = (Player) event.getDamager();
-            ItemStack itemInHand = player.getInventory().getItemInMainHand();
 
-            // プレイヤーが剣または斧で攻撃しているかどうかをチェック
-            if (isSword(itemInHand.getType()) || isAxe(itemInHand.getType())) {
-                Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("剣士")) {
-                    // 剣または斧での攻撃をキャンセル
-                    event.setCancelled(true);
-                    player.sendMessage("剣または斧での攻撃は禁止されています！");
-                }
-            }
-        }
-    }
-
-    private boolean isSword(Material material) {
-        return material == Material.WOODEN_SWORD || material == Material.STONE_SWORD ||
-                material == Material.IRON_SWORD || material == Material.GOLDEN_SWORD ||
-                material == Material.DIAMOND_SWORD || material == Material.NETHERITE_SWORD;
-    }
-
-    private boolean isAxe(Material material) {
-        return material == Material.WOODEN_AXE || material == Material.STONE_AXE ||
-                material == Material.IRON_AXE || material == Material.GOLDEN_AXE ||
-                material == Material.DIAMOND_AXE || material == Material.NETHERITE_AXE;
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        Team team = player.getScoreboard().getEntryTeam(player.getName());
-        if (event.hasBlock() && event.getClickedBlock().getType() == Material.BREWING_STAND) {
-            if (team == null || !team.getName().equals("裁縫師")) {
-                event.setCancelled(true);
-            }
-        }
-        // プレイヤーがアイテムを使用しようとした時のイベント
-        if (event.hasItem() && event.getItem().getType() == Material.CROSSBOW) {
-            // イベントで取得したアイテムがクロスボウの場合
-            if (team == null || !team.getName().equals("剣士")) {
-                event.setCancelled(true); // イベントをキャンセルしてクロスボウの使用を禁止
-                event.getPlayer().sendMessage("クロスボウの使用は禁止されています。");
-            }
-        }
-    }
 
 
     @EventHandler
@@ -252,7 +198,7 @@ public final class Craftout extends JavaPlugin implements Listener {
             Player player = (Player) event.getWhoClicked();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
 
-            if (team == null || !team.getName().equals("鍛冶屋")) {
+            if (team == null || !team.getName().equals("kaziya")) {
                 event.setCancelled(true);
                 player.sendMessage("あなたは鍛冶屋のチームに所属していないため、ロケット花火を作成することはできません。");
             }
@@ -261,17 +207,11 @@ public final class Craftout extends JavaPlugin implements Listener {
             Player player = (Player) event.getWhoClicked();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
 
-            if (team == null || !team.getName().equals("鍛冶屋")) {
+            if (team == null || !team.getName().equals("kaziya")) {
                 event.setCancelled(true);
                 player.sendMessage("あなたは鍛冶屋のチームに所属していないため、ロケット花火を作成することはできません。");
             }
         }
-    }
-
-    @EventHandler
-    public void onPrepareSmithing(PrepareSmithingEvent event) {
-        // すべての鍛冶台アップグレードをキャンセル
-        event.setResult(null);
     }
 
 }
