@@ -2,6 +2,7 @@ package com.github.kumo0621.craftout;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Player;
@@ -9,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.inventory.*;
@@ -109,7 +111,21 @@ public final class Craftout extends JavaPlugin implements Listener {
             player.sendMessage("あなたはエンチャントを行うことができません！");
         }
     }
-
+    @EventHandler
+    public void onBlockPlace(BlockPlaceEvent event) {
+        Block block = event.getBlock();
+        Player player = event.getPlayer();
+        Team team = player.getScoreboard().getEntryTeam(player.getName());
+        World world = block.getWorld();
+        Material type = block.getType();
+        if (team != null && !team.getName().equals("kikori")) {
+            // Check if the block placed is a sapling and the world is The End
+            if (type.name().endsWith("_SAPLING") && world.getEnvironment() == World.Environment.THE_END) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage("苗木は木こりしか置けません");
+            }
+        }
+    }
 
     @EventHandler
     public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
