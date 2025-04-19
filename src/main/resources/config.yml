@@ -1,0 +1,19 @@
+#Toolのcraft許可
+ToolCraft: kaziya
+#骨粉許可
+bone: nougyou
+#防具のcraft
+armament: saihousi
+#ディスペンサーの発射キャンセルの設定
+dispenser: true
+
+#エンチャント許可
+Enchant: saihousi
+#苗木を置く設置許可
+oak: kikori
+#農業を作るやつ
+nougyou: nougyou
+#鉄床の使えるやつ
+anvil: kaziya
+#ロケット花火作成＆花火の星
+rocket: kaziya

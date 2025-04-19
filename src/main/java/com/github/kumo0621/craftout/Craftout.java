@@ -29,14 +29,31 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Craftout extends JavaPlugin implements Listener {
 
     private final Set<Material> restrictedTools = new HashSet<>();
     private final Random random = new Random();
+    // グローバル変数
+    private String ToolCraft;
+    private String bone;
+    private String armament;
+    private boolean dispenser;
+    private String Enchant;
+    private String oak;
+    private String nougyou;
 
+    private String anvil;
+
+    private String rocket;
     @Override
     public void onEnable() {
+        // デフォルトのconfigを保存する
+        saveDefaultConfig();
+        // configから値を読み込む
+        loadConfigValues();
         // イベントリスナーを登録
         getServer().getPluginManager().registerEvents(this, this);
 
@@ -50,13 +67,28 @@ public final class Craftout extends JavaPlugin implements Listener {
         ));
     }
 
+    // Configの値を読み込むメソッド
+    public void loadConfigValues() {
+        FileConfiguration config = this.getConfig();
+
+        // 各値をグローバル変数に設定
+        ToolCraft = config.getString("ToolCraft");
+        bone = config.getString("bone");
+        armament = config.getString("armament");
+        dispenser = config.getBoolean("dispenser");
+        Enchant = config.getString("Enchant");
+        oak = config.getString("oak");
+        nougyou = config.getString("nougyou");
+        anvil = config.getString("anvil");
+        rocket = config.getString("rocket");
+    }
     @EventHandler
     public void onCraftItem(CraftItemEvent event) {
         ItemStack item = event.getCurrentItem();
         if (item != null && restrictedTools.contains(item.getType())) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("kaziya")) {
+                if (team == null || !team.getName().equals(ToolCraft)) {
                     // チーム名が「鍛冶屋」でなければ、クラフトをキャンセル
                     event.setCancelled(true);
                     player.sendMessage("あなたはこのツールをクラフトできません！");
@@ -66,7 +98,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (item != null && item.getType() == Material.BONE_MEAL) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("nougyou")) {
+                if (team == null || !team.getName().equals(bone)) {
                     // チーム名が「鍛冶屋」でなければ、作業台のクラフトをキャンセル
                     event.setCancelled(true);
                     player.sendMessage("あなたは骨粉をクラフトすることができません！");
@@ -76,7 +108,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (item != null && isArmor(item.getType())) {
             if (event.getWhoClicked() instanceof Player player) {
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("saihousi")) {
+                if (team == null || !team.getName().equals(armament)) {
                     // チーム名が「裁縫師」でなければ、防具のクラフトをキャンセル
                     event.setCancelled(true);
                     player.sendMessage("あなたは防具をクラフトすることができません！");
@@ -96,7 +128,7 @@ public final class Craftout extends JavaPlugin implements Listener {
 
         // ディスペンサーからのアイテム放出をキャンセル
         if (block.getType() == Material.DISPENSER) {
-            event.setCancelled(true);
+            event.setCancelled(dispenser);
         }
         // ドロッパーからのアイテム放出はそのまま許可（何もしない）
     }
@@ -105,7 +137,7 @@ public final class Craftout extends JavaPlugin implements Listener {
     public void onEnchantItem(EnchantItemEvent event) {
         Player player = event.getEnchanter();
         Team team = player.getScoreboard().getEntryTeam(player.getName());
-        if (team == null || !team.getName().equals("ryousi")) {
+        if (team == null || !team.getName().equals(Enchant)) {
             // チーム名が「パン屋」でなければ、エンチャントをキャンセル
             event.setCancelled(true);
             player.sendMessage("あなたはエンチャントを行うことができません！");
@@ -118,7 +150,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         Team team = player.getScoreboard().getEntryTeam(player.getName());
         World world = block.getWorld();
         Material type = block.getType();
-        if (team != null && !team.getName().equals("kikori")) {
+        if (team != null && !team.getName().equals(oak)) {
             // Check if the block placed is a sapling and the world is The End
             if (type.name().endsWith("_SAPLING") && world.getEnvironment() == World.Environment.THE_END) {
                 event.setCancelled(true);
@@ -132,7 +164,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         if (event.getRightClicked() instanceof Animals) {
             Player player = event.getPlayer();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
-            if (team == null || !team.getName().equals("nougyou")) {
+            if (team == null || !team.getName().equals(nougyou)) {
                 // チーム名が「パン屋」でなければ、動物の繁殖をキャンセル
                 event.setCancelled(true);
                 player.sendMessage("あなたは動物の繁殖を行うことができません！");
@@ -164,6 +196,34 @@ public final class Craftout extends JavaPlugin implements Listener {
                 return false;
         }
     }
+    @EventHandler
+    public void anvil(PrepareAnvilEvent event) {
+        AnvilInventory anvilInventory = event.getInventory();
+        ItemStack firstItem = anvilInventory.getItem(0);  // 左側のアイテム
+        ItemStack secondItem = anvilInventory.getItem(1);  // 右側のアイテム（素材）
+
+        // 両方のアイテムが存在し、かつ耐久値のあるアイテムの場合
+        if (firstItem != null && secondItem != null && firstItem.getType() != Material.AIR && secondItem.getType() != Material.AIR) {
+            // 第一アイテムが耐久値を持つ場合
+            if (firstItem.getType().getMaxDurability() > 0) {
+                short currentDurability = firstItem.getDurability();
+                short maxDurability = firstItem.getType().getMaxDurability();
+
+                // 耐久値が最大値よりも減少している（つまり、回復しようとしている）
+                if (currentDurability > 0) {
+                    // イベントをキャンセルして修復を防ぐ
+                    event.setResult(null);  // 修復結果をなしにする
+                    event.getViewers().forEach(viewer -> {
+                        if (viewer instanceof Player) {
+                            ((Player) viewer).sendMessage("鉄床による耐久値の回復は禁止されています。");
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+
 
     @EventHandler
     public void onAnvilUse(InventoryClickEvent event) {
@@ -171,13 +231,18 @@ public final class Craftout extends JavaPlugin implements Listener {
             if (event.getWhoClicked() instanceof Player) {
                 Player player = (Player) event.getWhoClicked();
                 Team team = player.getScoreboard().getEntryTeam(player.getName());
-                if (team == null || !team.getName().equals("kaziya")) {
+
+                // 鍛冶屋チーム以外のプレイヤーが金床を使用しようとした場合
+                if (team == null || !team.getName().equals(anvil)) {
                     event.setCancelled(true);
                     player.sendMessage("鍛冶屋チームのメンバーが金床を使用できます。");
                 }
             }
         }
     }
+
+
+
 
     @EventHandler
     public void onRightClickNetherStar(PlayerInteractEvent event) {
@@ -214,7 +279,7 @@ public final class Craftout extends JavaPlugin implements Listener {
             Player player = (Player) event.getWhoClicked();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
 
-            if (team == null || !team.getName().equals("kaziya")) {
+            if (team == null || !team.getName().equals(rocket)) {
                 event.setCancelled(true);
                 player.sendMessage("あなたは鍛冶屋のチームに所属していないため、ロケット花火を作成することはできません。");
             }
@@ -223,7 +288,7 @@ public final class Craftout extends JavaPlugin implements Listener {
             Player player = (Player) event.getWhoClicked();
             Team team = player.getScoreboard().getEntryTeam(player.getName());
 
-            if (team == null || !team.getName().equals("kaziya")) {
+            if (team == null || !team.getName().equals(rocket)) {
                 event.setCancelled(true);
                 player.sendMessage("あなたは鍛冶屋のチームに所属していないため、ロケット花火を作成することはできません。");
             }
