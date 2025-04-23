@@ -150,7 +150,7 @@ public final class Craftout extends JavaPlugin implements Listener {
         Team team = player.getScoreboard().getEntryTeam(player.getName());
         World world = block.getWorld();
         Material type = block.getType();
-        if (team != null && !team.getName().equals(oak)) {
+        if (team == null || !team.getName().equals(oak)) {
             // Check if the block placed is a sapling and the world is The End
             if (type.name().endsWith("_SAPLING") && world.getEnvironment() == World.Environment.THE_END) {
                 event.setCancelled(true);
